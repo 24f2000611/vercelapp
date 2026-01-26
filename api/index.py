@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
@@ -6,15 +6,19 @@ import json
 import statistics
 import os
 
-# Vercel REQUIRES this exact line for FastAPI detection
 app = FastAPI()
 
-# Enable CORS for POST + OPTIONS preflight
+# Handle ALL OPTIONS preflight requests FIRST
+@app.options("/{full_path:path}")
+async def preflight_handler(request: Request):
+    return {}
+
+# CORS middleware AFTER options handler
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
-    allow_methods=["POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -24,7 +28,6 @@ class RequestBody(BaseModel):
 
 @app.post("/")
 async def analytics_endpoint(body: RequestBody):
-    # Load telemetry data (q-vercel-latency.json in project root)
     telemetry_path = os.path.join(os.path.dirname(__file__), '..', 'q-vercel-latency.json')
     with open(telemetry_path, 'r') as f:
         telemetry = json.load(f)
@@ -48,7 +51,6 @@ async def analytics_endpoint(body: RequestBody):
     
     return results
 
-# Health check endpoint
 @app.get("/")
 async def root():
     return {"message": "POST analytics endpoint ready"}
