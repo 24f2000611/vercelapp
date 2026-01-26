@@ -8,6 +8,10 @@ import os
 
 app = FastAPI()
 
+@app.options("/{full_path:path}")
+async def options_handler():
+    return {}
+    
 # Enable CORS for POST from any origin
 app.add_middleware(
     CORSMiddleware,
@@ -16,6 +20,7 @@ app.add_middleware(
     allow_methods=["POST"],
     allow_headers=["*"],
 )
+
 
 class RequestBody(BaseModel):
     regions: List[str]
