@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List 
 import pandas as pd
+import os
 
 app =FastAPI()
 
@@ -14,10 +15,12 @@ data='q-vercel-latency.json'
 
 @app.post('/api/latency')
 async def get_latency_metrics(req:LatencyRequest):
+    current_dir = os.path.dirname(os.path.abaspath(__file__))
+    file_path = os.path.join(current_dir,"..",data)
     try:
-        df =pd.read_csv(data)
-    except FileNotFoundError:
-        return {"error":f"file{data} not found."}
+        df =pd.read_json(file_path)
+    except Exception as e:
+        return {"error":f"{data}:{str(e)}"}
     results = {} 
     for region in req.regions:
         region_df = df[df['region']==region]
