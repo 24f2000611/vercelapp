@@ -25,7 +25,7 @@ async def get_latency_metrics(req:LatencyRequest):
             continue
         avg_latency = region_df['latency_ms'].mean()
         p95_latency = region_df['latency_ms'].quantile(0.95)
-        avg_uptime = region_df['uptime'].mean()
+        avg_uptime = region_df['uptime_pct'].mean()
 
         breaches = (region_df['latency_ms']>req.threshold_ms).sum()
 
