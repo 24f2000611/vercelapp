@@ -10,8 +10,12 @@ app = FastAPI()
 
 # Handle ALL OPTIONS preflight requests FIRST
 @app.options("/{full_path:path}")
-async def preflight_handler(request: Request):
-    return {}
+async def options():
+    return {"status": "ok"}
+    
+class RequestBody(BaseModel):
+    regions: List[str]
+    threshold_ms: int
 
 # CORS middleware AFTER options handler
 app.add_middleware(
@@ -21,11 +25,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
-
-class RequestBody(BaseModel):
-    regions: List[str]
-    threshold_ms: int
-
 @app.post("/")
 async def analytics_endpoint(body: RequestBody):
     telemetry_path = os.path.join(os.path.dirname(__file__), '..', 'q-vercel-latency.json')
