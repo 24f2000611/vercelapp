@@ -1,8 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List 
+from typing import List ,Dict
 import pandas as pd
+import statistics
+import uvicorn
 import os
 
 app =FastAPI()
@@ -11,32 +13,25 @@ app.add_middleware(CORSMiddleware,allow_origina=['*'],allow_credientials =True,a
 class LatencyRequest(BaseModel):
     regions:List[str]
     threshold_ms :int
-data='q-vercel-latency.json'
 
-@app.post('/api/latency')
-async def get_latency_metrics(req:LatencyRequest):
-    current_dir = os.path.dirname(os.path.abaspath(__file__))
-    file_path = os.path.join(current_dir,"..",data)
-    try:
-        df =pd.read_json(file_path)
-    except Exception as e:
-        return {"error":f"{data}:{str(e)}"}
+@app.post('/')
+async def analytics_endpoint(body:RequestBody):
+    import json
+    with open('q-vercel-latency.json') as f:
+        telemetry= json.load(f)
     results = {} 
-    for region in req.regions:
-        region_df = df[df['region']==region]
-        if region_df.empty:
+    for region in body.regions:
+        region_data= [r for r in telemetry if r.get('region')==region]
+        if not region_data:
+            results[region] ={"error":"No data for region"}
             continue
-        avg_latency = region_df['latency_ms'].mean()
-        p95_latency = region_df['latency_ms'].quantile(0.95)
-        avg_uptime = region_df['uptime_pct'].mean()
-
-        breaches = (region_df['latency_ms']>req.threshold_ms).sum()
-
-        results[region]={
-            "avg_latency":float(avg_latency),
-            "p95_latecy":float(p95_latency),
-            "avg_uptime":float(avg_uptime),
-            "breaches":int(breaches)}
+        latencies= [r['latency_ms'] for r in region_data]
+        uptimes = [r['uptime']for r in region_data]
+        results[region] ={
+        "avg_latency" : round(statistics.mean(latencies),2),
+        "p95_latency" :round(statistics.quantiles(latencies,n=20)[19],2),
+        "avg_uptimes: : round(statistics.mean(uptimes),4),
+        "breaches":sum(1 for lat in latencies if lat>body.threshold_ms)
     return results
 
 
