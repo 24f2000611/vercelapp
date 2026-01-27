@@ -1,4 +1,3 @@
-import os
 import json
 import numpy as np
 from fastapi import FastAPI, HTTPException
@@ -23,12 +22,13 @@ class RequestBody(BaseModel):
 @app.post("/")
 async def analyze_latency(body: RequestBody):
     # Load the sample telemetry data (download q-vercel-latency.json and place in api/ folder)
+    import os
+    data_path = os.path.join(os.path.dirname(__file__), "q-vercel-latency.json")
     try:
-        with open("q-vercel-latency.json", "r") as f:
+        with open(data_path, "r") as f:
             data = json.load(f)
     except FileNotFoundError:
         raise HTTPException(status_code=500, detail="Telemetry file missing")
-
     results = {}
     for region in body.regions:
         region_data = [r for r in data["records"] if r.get("region") == region]
