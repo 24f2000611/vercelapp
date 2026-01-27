@@ -275,9 +275,6 @@ telemetry_data = {
 ]
 }
 
-@app.get("/") 
-def health():
-    return {results}
 
 @app.post("/")
 async def analyze_latency(body: RequestBody):
@@ -289,7 +286,7 @@ async def analyze_latency(body: RequestBody):
             continue
         
         latencies = [r["latency_ms"] for r in region_data]
-        uptimes = [r["uptime_pct"] for r in region_data]  # ← Fixed field name
+        uptimes = [r["uptime_pct"] for r in region_data] 
         
         results[region] = {
             "avg_latency": float(np.mean(latencies)),
@@ -299,3 +296,9 @@ async def analyze_latency(body: RequestBody):
         }
     
     return results
+
+@app.get("/") 
+async def health():
+    return {"status": "healthy","regions":["amer","emea","apac"]}
+
+
