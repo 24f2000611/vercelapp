@@ -277,7 +277,7 @@ telemetry_data = {
 
 @app.get("/") 
 def health():
-    return {"regions": ["apac", "emea", "amer"]}
+    return {results}
 
 @app.post("/")
 async def analyze_latency(body: RequestBody):
