@@ -18,7 +18,7 @@ class RequestBody(BaseModel):
     threshold_ms: int
 
 # CORS middleware AFTER options handler
-app.add_middleware(
+CORS_HEADER(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
