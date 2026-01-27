@@ -1,53 +1,49 @@
-from fastapi import FastAPI, Request
+import os
+import json
+import numpy as np
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
-import json
-import statistics
-import os
+from typing import List, Dict
 
 app = FastAPI()
 
-@app.options("/{full_path:path}")
-async def options():
-    return {"status": "ok"}
-    
+# Enable CORS for POST from any origin
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["POST"],
+    allow_headers=["*"],
+)
+
 class RequestBody(BaseModel):
     regions: List[str]
     threshold_ms: int
 
-
-CORS_HEADERS = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Expose-Headers": "Access-Control-Allow-Origin",
-}
 @app.post("/")
-async def analytics_endpoint(body: RequestBody):
-    telemetry_path = os.path.join(os.path.dirname(__file__), '..', 'q-vercel-latency.json')
-    with open(telemetry_path, 'r') as f:
-        telemetry = json.load(f)
-    
+async def analyze_latency(body: RequestBody):
+    # Load the sample telemetry data (download q-vercel-latency.json and place in api/ folder)
+    try:
+        with open("q-vercel-latency.json", "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=500, detail="Telemetry file missing")
+
     results = {}
     for region in body.regions:
-        region_data = [r for r in telemetry if r.get("region") == region]
+        region_data = [r for r in data["records"] if r.get("region") == region]
         if not region_data:
             results[region] = {"error": "No data for region"}
             continue
         
-        latencies = [r["latency_ms"] for r in region_data]
-        uptimes = [r["uptime"] for r in region_data]
+        latencies = [r["latency_ms"] for r in region_data if "latency_ms" in r]
+        uptimes = [r["uptime_percent"] for r in region_data if "uptime_percent" in r]
         
         results[region] = {
-            "avg_latency": round(statistics.mean(latencies), 2),
-            "p95_latency": round(sorted(latencies)[int(0.95 * len(latencies))], 2),
-            "avg_uptime": round(statistics.mean(uptimes), 4),
+            "avg_latency": float(np.mean(latencies)),
+            "p95_latency": float(np.percentile(latencies, 95)),
+            "avg_uptime": float(np.mean(uptimes)),
             "breaches": sum(1 for lat in latencies if lat > body.threshold_ms)
         }
     
     return results
-
-@app.get("/")
-async def root():
-    return {"message": "POST analytics endpoint ready"}
