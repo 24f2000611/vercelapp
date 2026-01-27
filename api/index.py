@@ -275,6 +275,9 @@ telemetry_data = {
 ]
 }
 
+@app.get("/") 
+def health():
+    return {"status": "POST analytics ready", "regions": ["apac", "emea", "amer"]}
 
 @app.post("/")
 async def analyze_latency(body: RequestBody):
