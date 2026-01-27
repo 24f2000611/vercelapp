@@ -1,0 +1,12 @@
+name: Test Vercel Endpoint
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Test POST endpoint
+      run: |
+        curl -X POST https://vercelapp-f2m9gglxv-harshs-projects-a1928238.vercel.app/ \
+          -H "Content-Type: application/json" \
+          -d '{"regions":["emea","apac"],"threshold_ms":164}' \
+          | jq .
