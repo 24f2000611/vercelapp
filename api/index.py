@@ -7,11 +7,10 @@ from typing import List, Dict
 
 app = FastAPI()
 
-# Enable CORS for POST from any origin
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["POST"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -19,25 +18,275 @@ class RequestBody(BaseModel):
     regions: List[str]
     threshold_ms: int
 
+telemetry_data = {
+    "records": [
+  {
+    "region": "apac",
+    "service": "analytics",
+    "latency_ms": 166.04,
+    "uptime_pct": 98.368,
+    "timestamp": 20250301
+  },
+  {
+    "region": "apac",
+    "service": "checkout",
+    "latency_ms": 144.73,
+    "uptime_pct": 98.457,
+    "timestamp": 20250302
+  },
+  {
+    "region": "apac",
+    "service": "payments",
+    "latency_ms": 210.58,
+    "uptime_pct": 97.672,
+    "timestamp": 20250303
+  },
+  {
+    "region": "apac",
+    "service": "analytics",
+    "latency_ms": 206.12,
+    "uptime_pct": 97.111,
+    "timestamp": 20250304
+  },
+  {
+    "region": "apac",
+    "service": "support",
+    "latency_ms": 104.96,
+    "uptime_pct": 99.121,
+    "timestamp": 20250305
+  },
+  {
+    "region": "apac",
+    "service": "catalog",
+    "latency_ms": 222.77,
+    "uptime_pct": 98.471,
+    "timestamp": 20250306
+  },
+  {
+    "region": "apac",
+    "service": "analytics",
+    "latency_ms": 141.21,
+    "uptime_pct": 98.291,
+    "timestamp": 20250307
+  },
+  {
+    "region": "apac",
+    "service": "payments",
+    "latency_ms": 155.02,
+    "uptime_pct": 99.008,
+    "timestamp": 20250308
+  },
+  {
+    "region": "apac",
+    "service": "payments",
+    "latency_ms": 137.68,
+    "uptime_pct": 99.39,
+    "timestamp": 20250309
+  },
+  {
+    "region": "apac",
+    "service": "analytics",
+    "latency_ms": 209.1,
+    "uptime_pct": 97.515,
+    "timestamp": 20250310
+  },
+  {
+    "region": "apac",
+    "service": "support",
+    "latency_ms": 121.21,
+    "uptime_pct": 99.408,
+    "timestamp": 20250311
+  },
+  {
+    "region": "apac",
+    "service": "recommendations",
+    "latency_ms": 215.52,
+    "uptime_pct": 97.102,
+    "timestamp": 20250312
+  },
+  {
+    "region": "emea",
+    "service": "catalog",
+    "latency_ms": 153.06,
+    "uptime_pct": 98.234,
+    "timestamp": 20250301
+  },
+  {
+    "region": "emea",
+    "service": "payments",
+    "latency_ms": 203.26,
+    "uptime_pct": 97.101,
+    "timestamp": 20250302
+  },
+  {
+    "region": "emea",
+    "service": "checkout",
+    "latency_ms": 220.54,
+    "uptime_pct": 97.881,
+    "timestamp": 20250303
+  },
+  {
+    "region": "emea",
+    "service": "checkout",
+    "latency_ms": 190.83,
+    "uptime_pct": 98.1,
+    "timestamp": 20250304
+  },
+  {
+    "region": "emea",
+    "service": "analytics",
+    "latency_ms": 115.44,
+    "uptime_pct": 99.485,
+    "timestamp": 20250305
+  },
+  {
+    "region": "emea",
+    "service": "support",
+    "latency_ms": 190.41,
+    "uptime_pct": 98.259,
+    "timestamp": 20250306
+  },
+  {
+    "region": "emea",
+    "service": "checkout",
+    "latency_ms": 236.83,
+    "uptime_pct": 97.613,
+    "timestamp": 20250307
+  },
+  {
+    "region": "emea",
+    "service": "analytics",
+    "latency_ms": 165.05,
+    "uptime_pct": 98.257,
+    "timestamp": 20250308
+  },
+  {
+    "region": "emea",
+    "service": "payments",
+    "latency_ms": 125.78,
+    "uptime_pct": 98.844,
+    "timestamp": 20250309
+  },
+  {
+    "region": "emea",
+    "service": "support",
+    "latency_ms": 216.5,
+    "uptime_pct": 98.265,
+    "timestamp": 20250310
+  },
+  {
+    "region": "emea",
+    "service": "support",
+    "latency_ms": 227.77,
+    "uptime_pct": 97.399,
+    "timestamp": 20250311
+  },
+  {
+    "region": "emea",
+    "service": "checkout",
+    "latency_ms": 155.16,
+    "uptime_pct": 98.525,
+    "timestamp": 20250312
+  },
+  {
+    "region": "amer",
+    "service": "catalog",
+    "latency_ms": 174.48,
+    "uptime_pct": 99.321,
+    "timestamp": 20250301
+  },
+  {
+    "region": "amer",
+    "service": "analytics",
+    "latency_ms": 195.66,
+    "uptime_pct": 98.231,
+    "timestamp": 20250302
+  },
+  {
+    "region": "amer",
+    "service": "analytics",
+    "latency_ms": 134.11,
+    "uptime_pct": 98.28,
+    "timestamp": 20250303
+  },
+  {
+    "region": "amer",
+    "service": "catalog",
+    "latency_ms": 217.39,
+    "uptime_pct": 97.776,
+    "timestamp": 20250304
+  },
+  {
+    "region": "amer",
+    "service": "analytics",
+    "latency_ms": 226.17,
+    "uptime_pct": 98.422,
+    "timestamp": 20250305
+  },
+  {
+    "region": "amer",
+    "service": "checkout",
+    "latency_ms": 187.18,
+    "uptime_pct": 97.309,
+    "timestamp": 20250306
+  },
+  {
+    "region": "amer",
+    "service": "checkout",
+    "latency_ms": 130.55,
+    "uptime_pct": 98.989,
+    "timestamp": 20250307
+  },
+  {
+    "region": "amer",
+    "service": "checkout",
+    "latency_ms": 127.89,
+    "uptime_pct": 97.186,
+    "timestamp": 20250308
+  },
+  {
+    "region": "amer",
+    "service": "analytics",
+    "latency_ms": 204.8,
+    "uptime_pct": 98.441,
+    "timestamp": 20250309
+  },
+  {
+    "region": "amer",
+    "service": "catalog",
+    "latency_ms": 185.28,
+    "uptime_pct": 97.477,
+    "timestamp": 20250310
+  },
+  {
+    "region": "amer",
+    "service": "checkout",
+    "latency_ms": 179.48,
+    "uptime_pct": 98.982,
+    "timestamp": 20250311
+  },
+  {
+    "region": "amer",
+    "service": "checkout",
+    "latency_ms": 105.31,
+    "uptime_pct": 98.165,
+    "timestamp": 20250312
+  }
+]
+}
+
+
 @app.post("/")
 async def analyze_latency(body: RequestBody):
-    # Load the sample telemetry data (download q-vercel-latency.json and place in api/ folder)
-    import os
-    data_path = os.path.join(os.path.dirname(__file__), "q-vercel-latency.json")
-    try:
-        with open(data_path, "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=500, detail="Telemetry file missing")
     results = {}
     for region in body.regions:
-        region_data = [r for r in data["records"] if r.get("region") == region]
+        region_data = [r for r in telemetry_data["records"] if r.get("region") == region]
         if not region_data:
             results[region] = {"error": "No data for region"}
             continue
         
-        latencies = [r["latency_ms"] for r in region_data if "latency_ms" in r]
-        uptimes = [r["uptime_percent"] for r in region_data if "uptime_percent" in r]
+        latencies = [r["latency_ms"] for r in region_data]
+        uptimes = [r["uptime_pct"] for r in region_data]  # ← Fixed field name
         
         results[region] = {
             "avg_latency": float(np.mean(latencies)),
